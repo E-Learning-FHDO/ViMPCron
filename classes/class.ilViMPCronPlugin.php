@@ -2,7 +2,6 @@
 
 require_once __DIR__ . "/../vendor/autoload.php";
 
-use srag\DIC\ViMP\DICTrait;
 use srag\Plugins\ViMP\Cron\ViMPJob;
 
 /**
@@ -13,7 +12,7 @@ use srag\Plugins\ViMP\Cron\ViMPJob;
 class ilViMPCronPlugin extends ilCronHookPlugin
 {
 
-    use DICTrait;
+    //use DICTrait;
 
     const PLUGIN_CLASS_NAME = ilViMPPlugin::class;
     const PLUGIN_ID = "xvmpcron";
@@ -21,7 +20,7 @@ class ilViMPCronPlugin extends ilCronHookPlugin
     /**
      * @var self|null
      */
-    protected static $instance = null;
+    protected static ?ilViMPCronPlugin $instance = null;
 
 
     /**
@@ -29,7 +28,11 @@ class ilViMPCronPlugin extends ilCronHookPlugin
      */
     public function __construct()
     {
-        parent::__construct();
+        global $DIC;
+        $this->db = $DIC->database();
+        parent::__construct(
+            $this->db, $DIC["component.repository"], self::PLUGIN_ID
+        );
     }
 
 
@@ -58,15 +61,9 @@ class ilViMPCronPlugin extends ilCronHookPlugin
     /**
      * @inheritDoc
      */
-    public function getCronJobInstance(/*string*/ $a_job_id)/*: ?ilCronJob*/
+    public function getCronJobInstance(string $a_job_id): ilCronJob
     {
-        switch ($a_job_id) {
-            case ViMPJob::CRON_JOB_ID:
-                return new ViMPJob();
-
-            default:
-                return null;
-        }
+        return new ViMPJob();
     }
 
 
